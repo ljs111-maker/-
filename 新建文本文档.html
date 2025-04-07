@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青岛啤酒五厂包装部外来人员进出登记表</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        .form-container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .submit-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .submit-btn:hover {
+            background-color: #27ae60;
+        }
+        .export-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        .export-btn:hover {
+            background-color: #2980b9;
+        }
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>青岛啤酒五厂包装部外来人员进出登记表</h1>
+    
+    <div class="form-container">
+        <form id="visitorForm">
+            <div class="form-group">
+                <label for="date">日期</label>
+                <input type="date" id="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="name">外来人员姓名</label>
+                <input type="text" id="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reason">来访事由</label>
+                <input type="text" id="reason" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="enterTime">进入时间</label>
+                <input type="time" id="enterTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="leaveTime">离开时间</label>
+                <input type="time" id="leaveTime" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="escort">陪同人</label>
+                <input type="text" id="escort" required>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="submit-btn" onclick="submitForm()">提交</button>
+                <button type="button" class="export-btn" onclick="exportToExcel()">导出Excel</button>
+            </div>
+        </form>
+        
+        <div id="successMessage" class="success-message">
+            提交成功！
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // 存储所有记录的数组
+        let records = [];
+        
+        // 提交表单
+        function submitForm() {
+            const date = document.getElementById('date').value;
+            const name = document.getElementById('name').value;
+            const reason = document.getElementById('reason').value;
+            const enterTime = document.getElementById('enterTime').value;
+            const leaveTime = document.getElementById('leaveTime').value;
+            const escort = document.getElementById('escort').value;
+            
+            // 验证表单
+            if (!date || !name || !reason || !enterTime || !leaveTime || !escort) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 创建新记录
+            const newRecord = {
+                date,
+                name,
+                reason,
+                enterTime,
+                leaveTime,
+                escort
+            };
+            
+            // 添加到记录数组
+            records.push(newRecord);
+            
+            // 显示成功消息
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // 3秒后隐藏成功消息
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 3000);
+            
+            // 清空表单
+            document.getElementById('visitorForm').reset();
+        }
+        
+        // 导出为Excel
+        function exportToExcel() {
+            if (records.length === 0) {
+                alert('没有记录可导出');
+                return;
+            }
+            
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+            
+            // 创建包含标题的二维数组
+            const dataWithHeader = [
+                ['日期', '外来人员姓名', '来访事由', '进入时间', '离开时间', '陪同人']
+            ];
+            
+            // 添加记录数据
+            records.forEach(record => {
+                dataWithHeader.push([
+                    record.date,
+                    record.name,
+                    record.reason,
+                    record.enterTime,
+                    record.leaveTime,
+                    record.escort
+                ]);
+            });
+            
+            // 创建工作表
+            const ws = XLSX.utils.aoa_to_sheet(dataWithHeader);
+            
+            // 添加工作表到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, '访客记录');
+            
+            // 导出Excel文件
+            XLSX.writeFile(wb, '青岛啤酒五厂包装部外来人员进出登记表.xlsx');
+        }
+    </script>
+</body>
+</html>
